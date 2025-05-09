@@ -1,0 +1,53 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      # Setup Tailscale
+      - name: Tailscale
+        uses:   
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          
+      # Wait for Tailscale to be ready
+      - name: Wait for Tailscale
+        run: sleep 10
+        
+      # Add server's host key to known_hosts
+      - name: Setup SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+          
+      # Deploy using SSH over Tailscale
+      - name: Deploy to server
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+        run: |
+          # Setup SSH key
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          # Copy files to server
+          ssh $SERVER_USER@$SERVER_HOST 'mkdir -p ~/slack-bot'
+          scp -r ./* $SERVER_USER@$SERVER_HOST:~/slack-bot/
+          
+          # Deploy using Docker Compose
+          ssh $SERVER_USER@$SERVER_HOST << 'EOF'
+            cd ~/slack-bot
+            docker-compose down
+            docker-compose up -d --build
+            docker system prune -f
+          EOF 

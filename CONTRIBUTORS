@@ -1,0 +1,49 @@
+# Contributors
+
+## Core Team
+- Frey Clante (@fclante)
+
+## Contributors
+Thank you to all the people who have contributed to this project!
+
+To become a contributor:
+1. Fork the repository
+2. Create a new branch for your feature
+3. Submit a pull request
+4. Follow our code review process
+
+Please ensure you follow our code of conduct and contribution guidelines.
+
+## How to Contribute
+We welcome contributions of all kinds! Here are some ways you can help:
+
+- Report bugs
+- Suggest new features
+- Write or update documentation
+- Submit pull requests
+- Help other users
+
+For more information on contributing, please read our contribution guidelines.
+
+## Labels to Use
+- `bug`: Something isn't working
+- `enhancement`: New feature or request
+- `documentation`: Documentation updates
+- `security`: Security-related issues
+- `command`: Slack command updates
+- `urgent`: Needs immediate attention
+- `good first issue`: Good for newcomers
+
+## Issue Lifecycle
+1. **New**: Issue is created
+2. **Triage**: Issue is reviewed by maintainers
+3. **Accepted**: Issue is accepted for work
+4. **In Progress**: Work has started
+5. **Review**: Changes are being reviewed
+6. **Done**: Issue is resolved
+
+## Before Creating an Issue
+- Search existing issues to avoid duplicates
+- Ensure you have the latest version
+- Include all relevant information
+- Use clear and concise language 

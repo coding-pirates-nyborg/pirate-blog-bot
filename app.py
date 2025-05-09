@@ -252,7 +252,7 @@ media_subpath: '/posts/{file_date}'
     try:
         # Import and use your GitHub API function
         response = post_markdown_file(
-            repo=os.environ.get("GITHUB_REPOSITORY"),
+            repo=os.environ.get("BLOG_REPOSITORY"),
             path=file_path,
             content=markdown_content)
         
@@ -272,7 +272,7 @@ media_subpath: '/posts/{file_date}'
 
 def get_posts():
     # List files in a directory
-    files = list_repository_files(os.environ.get("GITHUB_REPOSITORY"), "_posts/")
+    files = list_repository_files(os.environ.get("BLOG_REPOSITORY"), "_posts/")
     # Transform the files into the format we need
     posts = [
         {
@@ -291,7 +291,7 @@ def handle_delete_modal_submission(ack, body, view, client):
     selected_posts = view["state"]["values"]["post_selection"]["post_checkboxes"]["selected_options"]
     
     print("Selected posts:", selected_posts)
-    responses = delete_posts(os.environ.get("GITHUB_REPOSITORY"), selected_posts)
+    responses = delete_posts(os.environ.get("BLOG_REPOSITORY"), selected_posts)
     
     # Print deletion results
     print("Deletion responses:", responses)
@@ -318,7 +318,7 @@ def handle_post_selection(ack, body, view, client):
         # Get the current content of the file
         print(f"Fetching content for {selected_post['value']}")
         current_content = get_file_content(
-            repo=os.environ.get("GITHUB_REPOSITORY"),
+            repo=os.environ.get("BLOG_REPOSITORY"),
             path=selected_post["value"]
         )
         print("Content fetched successfully")
@@ -372,7 +372,7 @@ def handle_edit_modal_submission(ack, body, view, client):
     try:
         # Update the post
         response = update_post(
-            repo=os.environ.get("GITHUB_REPOSITORY"),
+            repo=os.environ.get("BLOG_REPOSITORY"),
             path=file_path,
             content=new_content,
             commit_message=f"Update {file_path} via Slack"

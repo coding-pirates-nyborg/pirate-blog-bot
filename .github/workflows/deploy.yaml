@@ -29,26 +29,44 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ vars.SLACK_BOT_HOST }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
           
       # Deploy using SSH over Tailscale
       - name: Deploy to server
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_USER: ${{ vars.SSH_USER }}
-          SERVER_HOST: ${{ vars.SLACK_BOT_HOST }}
+          SSH_USER: ${{ vars.SSH_USER }}
+          SLACK_BOT_HOST: ${{ vars.SLACK_BOT_HOST }}
         run: |
-          # Setup SSH key
+          # Setup SSH key with error handling
+          if [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "Error: SSH_PRIVATE_KEY is not set"
+            exit 1
+          fi
+          
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           
+          # Verify SSH connection
+          if ! ssh -q -o BatchMode=yes -o StrictHostKeyChecking=accept-new "$SSH_USER@$SLACK_BOT_HOST" exit; then
+            echo "Error: Failed to establish SSH connection"
+            exit 1
+          fi
+          
+          # Create directory on remote server
+          echo "Creating remote directory..."
+          ssh "$SSH_USER@$SLACK_BOT_HOST" 'mkdir -p ~/slack-bot'
+          
           # Copy files to server
-          ssh $SSH_USER@$SLACK_BOT_HOST 'mkdir -p ~/slack-bot'
-          scp -r ./* $SSH_USER@$SLACK_BOT_HOST:~/slack-bot/
+          echo "Copying files to server..."
+          scp -r ./* "$SSH_USER@$SLACK_BOT_HOST:~/slack-bot/"
           
           # Deploy using Docker Compose
-          ssh $SSH_USER@$SLACK_BOT_HOST << 'EOF'
+          echo "Deploying with Docker Compose..."
+          ssh "$SSH_USER@$SLACK_BOT_HOST" bash << 'EOF'
+            set -e
             cd ~/slack-bot
-            docker-compose down
+            docker-compose down || true
             docker-compose up -d --build
             docker system prune -f
-          EOF 
+          EOF

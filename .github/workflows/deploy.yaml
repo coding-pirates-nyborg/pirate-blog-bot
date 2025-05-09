@@ -27,7 +27,7 @@ jobs:
       - name: Setup SSH known hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ vars.SERVER_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ vars.SLACK_BOT_HOST }} >> ~/.ssh/known_hosts
           
       # Deploy using SSH over Tailscale
       - name: Deploy to server

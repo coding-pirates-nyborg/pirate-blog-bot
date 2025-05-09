@@ -30,6 +30,16 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ vars.SLACK_BOT_HOST }} >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
+
+      # Create .env file
+      - name: Create .env file
+        run: |
+          cat > .env << EOL
+          SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_APP_TOKEN=${{ secrets.SLACK_APP_TOKEN }}
+          BLOG_REPOSITORY=${{ secrets.BLOG_REPOSITORY }}
+          EOL
+          cat .env # Debug: verify file contents
           
       # Deploy using SSH over Tailscale
       - name: Deploy to server
@@ -57,9 +67,17 @@ jobs:
           echo "Creating remote directory..."
           ssh "$SSH_USER@$SLACK_BOT_HOST" 'mkdir -p ~/slack-bot'
           
-          # Copy files to server
-          echo "Copying files to server..."
+          # First copy the .env file separately
+          echo "Copying .env file..."
+          scp .env "$SSH_USER@$SLACK_BOT_HOST:~/slack-bot/.env"
+          
+          # Then copy the rest of the files
+          echo "Copying project files..."
           scp -r ./* "$SSH_USER@$SLACK_BOT_HOST:~/slack-bot/"
+          
+          # Verify .env file exists and has content
+          echo "Verifying .env file..."
+          ssh "$SSH_USER@$SLACK_BOT_HOST" 'cat ~/slack-bot/.env'
           
           # Deploy using Docker Compose
           echo "Deploying with Docker Compose..."

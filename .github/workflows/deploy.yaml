@@ -37,6 +37,7 @@ jobs:
           cat > .env << EOL
           SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_APP_TOKEN=${{ secrets.SLACK_APP_TOKEN }}
+          GITHUB_ORG=coding-pirates-nyborg
           BLOG_REPOSITORY=${{ vars.BLOG_REPOSITORY }}
           GHP_TOKEN=${{ secrets.GHP_TOKEN }}
           EOL

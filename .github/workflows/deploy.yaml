@@ -18,6 +18,7 @@ jobs:
           oauth-client-id: ${{ vars.TS_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_CLIENT_SECRET }}
           tags: tag:ci
+          version: latest
           
       # Wait for Tailscale to be ready
       - name: Wait for Tailscale

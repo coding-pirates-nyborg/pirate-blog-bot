@@ -37,7 +37,7 @@ jobs:
           cat > .env << EOL
           SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_APP_TOKEN=${{ secrets.SLACK_APP_TOKEN }}
-          BLOG_REPOSITORY=${{ secrets.BLOG_REPOSITORY }}
+          BLOG_REPOSITORY=${{ vars.BLOG_REPOSITORY }}
           GHP_TOKEN=${{ secrets.GHP_TOKEN }}
           EOL
           cat .env # Debug: verify file contents

@@ -15,7 +15,7 @@ jobs:
       - name: Tailscale
         uses: tailscale/github-action@v3 
         with:
-          oauth-client-id: ${{ secrets.TS_CLIENT_ID }}
+          oauth-client-id: ${{ vars.TS_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_CLIENT_SECRET }}
           tags: tag:ci
           
@@ -27,7 +27,7 @@ jobs:
       - name: Setup SSH known hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ vars.SERVER_HOST }} >> ~/.ssh/known_hosts
           
       # Deploy using SSH over Tailscale
       - name: Deploy to server

@@ -201,5 +201,83 @@ def get_file_content(repo, path):
     
     return content
 
+def post_file(repo: str, path: str, content: bytes, is_base64: bool = False) -> dict:
+    """
+    Post a binary file to GitHub repository.
+    
+    Args:
+        repo: Repository name (e.g., 'username/repo')
+        path: File path in the repository
+        content: Binary content of the file
+        is_base64: Whether the content is already base64 encoded
+    
+    Returns:
+        Response from GitHub API
+    """
+    import base64
+    
+    headers = {
+        "Authorization": f"Bearer {os.environ.get('GHP_TOKEN')}",
+        "Accept": "application/vnd.github.v3+json",
+    }
+    
+    # Encode content if not already encoded
+    if not is_base64:
+        content = base64.b64encode(content).decode('utf-8')
+    
+    data = {
+        "message": f"Add file: {path}",
+        "content": content
+    }
+    
+    response = requests.put(
+        f"https://api.github.com/repos/{repo}/contents/{path}",
+        headers=headers,
+        json=data
+    )
+    
+    response.raise_for_status()
+    return response.json()
+
+def get_posts_list(repo: str) -> list:
+    """Get a list of all posts in the repository"""
+    import requests
+    import os
+    
+    print(f"Getting posts from repo: {repo}")  # Debug print
+    print(f"Using token: {os.environ.get('GHP_TOKEN')[:4]}...")  # Print first 4 chars of token safely
+    
+    # Get the contents of the posts directory
+    response = requests.get(
+        f"https://api.github.com/repos/{repo}/contents/posts",
+        headers={'Authorization': f'token {os.environ.get("GHP_TOKEN")}'}
+    )
+    
+    if response.status_code != 200:
+        print(f"GitHub API response: {response.status_code} - {response.text}")  # Debug print
+        raise Exception(f"Failed to get posts list: {response.text}")
+    
+    posts = []
+    
+    # Recursively get all .md files
+    def process_contents(contents, current_path=""):
+        for item in contents:
+            if item["type"] == "file" and item["name"].endswith(".md"):
+                posts.append(os.path.join(current_path, item["name"]))
+            elif item["type"] == "dir":
+                # Get contents of subdirectory
+                subdir_response = requests.get(
+                    item["url"],
+                    headers={'Authorization': f'token {os.environ.get("GHP_TOKEN")}'}
+                )
+                if subdir_response.status_code == 200:
+                    process_contents(
+                        subdir_response.json(),
+                        os.path.join(current_path, item["name"])
+                    )
+    
+    process_contents(response.json())
+    return sorted(posts)
+
 
 

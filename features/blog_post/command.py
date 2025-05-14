@@ -25,7 +25,17 @@ def register(app: App):
                         },
                         "label": {"type": "plain_text", "text": "Title"}
                     },
-                    # ... rest of the blocks ...
+                    {
+                        "type": "input",
+                        "block_id": "featured_image_block",
+                        "optional": True,
+                        "element": {
+                            "type": "file_input",
+                            "accept": ["image/png", "image/jpeg", "image/webp"],
+                            "action_id": "featured_image_input"
+                        },
+                        "label": {"type": "plain_text", "text": "Featured Image"}
+                    }
                 ]
             }
         )

@@ -1,7 +1,8 @@
 from slack_bolt import App
 from datetime import datetime
-from api import post_markdown_file
+from api import post_markdown_file, post_file
 import os
+from utils.image_processing import process_image
 
 def register(app: App):
     @app.view("blog_post_modal")
@@ -31,6 +32,31 @@ def register(app: App):
         user_info = client.users_info(user=body["user"]["id"])
         username = user_info["user"]["name"]
         
+        # Handle featured image if uploaded
+        featured_image_path = None
+        if "featured_image_input" in view["state"]["values"]["featured_image_block"]:
+            file_id = view["state"]["values"]["featured_image_block"]["featured_image_input"]["files"][0]
+            
+            # Get file info and content
+            file_info = client.files_info(file=file_id)
+            file_response = client.files_download(file=file_id)
+            
+            # Process image
+            processed_image, ext = process_image(file_response.content)
+            
+            # Upload to GitHub
+            image_filename = f"featured-{file_date}.{ext}"
+            image_path = f"assets/posts/{file_date}/{image_filename}"
+            
+            post_file(
+                repo=os.environ.get("BLOG_REPOSITORY"),
+                path=image_path,
+                content=processed_image,
+                is_base64=True
+            )
+            
+            featured_image_path = f"/assets{image_path}"
+        
         # Create markdown content
         markdown_content = f"""---
         title: {title}
@@ -42,6 +68,7 @@ def register(app: App):
         tags: {tags_list}
         pin: {str(is_pinned).lower()}
         media_subpath: '/posts/{file_date}'
+        featured_image: {featured_image_path if featured_image_path else ''}
         ---
 
         {content}
